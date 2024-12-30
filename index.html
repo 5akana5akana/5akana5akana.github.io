@@ -31,12 +31,12 @@
 </div>
 <div style="margin-top: 20px;">
 	<button style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;", onclick >
-		Convert
+		変換
 	</button>
 </div>
 
 <div style="margin-top: 20px;">
-	<p style="margin-bottom: 10px; font-weight: bold;">Conversion Result:</p>
+	<p style="margin-bottom: 10px; font-weight: bold;">変換結果:</p>
 	<textarea
 		rows="10"
 		cols="50"
@@ -77,7 +77,9 @@ document.querySelector('button').addEventListener('click', () => {
     // Convert from input format to plain text
 	const regex = new RegExp(platform_ruby_input_format[inputFormat].pattern);
 	convertedText = convertedText.replace(regex, (match, p1, p2) => {
-		return platform_ruby_output_format[outputFormat].replace('$1', p1).replace('$2', p2);
+		const p = [p1, p2];
+		const groups = platform_ruby_input_format[inputFormat].groups;
+		return platform_ruby_output_format[outputFormat].replace('$1', p[groups[0]]).replace('$2', p[groups[1]]);
 	});
     
     // Output converted text
