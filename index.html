@@ -1,0 +1,86 @@
+<textarea
+	rows="10"
+	cols="50"
+	placeholder="ここにテキストを入力"
+	style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; width: 100%; max-width: 600px;"
+>
+</textarea>
+
+<div style="margin-top: 20px;">
+	<p style="margin-bottom: 10px; font-weight: bold;">入力フォーマットを選択してください</p>
+	<label>
+		<input type="radio" name="platform" value="Pixiv" checked>
+		Pixiv
+	</label>
+	<label style="margin-left: 15px;">
+		<input type="radio" name="platform" value="Pukiwiki">
+		Pukiwiki
+	</label>
+</div>
+
+<div style="margin-top: 20px;">
+	<p style="margin-bottom: 10px; font-weight: bold;">出力フォーマットを選択してください</p>
+	<label>
+		<input type="radio" name="output-platform" value="Pixiv">
+		Pixiv
+	</label>
+	<label style="margin-left: 15px;">
+		<input type="radio" name="output-platform" value="Pukiwiki" checked>
+		Pukiwiki
+	</label>
+</div>
+<div style="margin-top: 20px;">
+	<button style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;", onclick >
+		Convert
+	</button>
+</div>
+
+<div style="margin-top: 20px;">
+	<p style="margin-bottom: 10px; font-weight: bold;">Conversion Result:</p>
+	<textarea
+		rows="10"
+		cols="50"
+		readonly
+		placeholder="変換結果がここに表示されます"
+		style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; width: 100%; max-width: 600px;"
+	>
+	</textarea>
+</div>
+
+<script>
+document.querySelector('button').addEventListener('click', () => {
+
+	// from input format to output format. This should be a regex pattern and has two groups, each of which is a regex pattern.
+	// The groups index shows whether the matched group is the kanji or the reading.
+	const platform_ruby_input_format = {
+		'Pixiv': {pattern: '\\[\\[rb:([^>]+)>([^>]+)\\]\\]', groups: [0,1]},
+		'Pukiwiki': {pattern: '&ruby\\(([^)]+)\\)\\{([^}]+)\\};', groups: [1,0]},
+	} 
+
+	const platform_ruby_output_format = {
+		'Pixiv': '[[rb:$1>$2]]',
+		'Pukiwiki': '&ruby($2){$1};',
+	} // from output format to input format. $1 is the kanji, $2 is the reading.
+
+    // Get input text
+    const inputText = document.querySelector('textarea').value;
+    
+    // Get selected input format
+    const inputFormat = document.querySelector('input[name="platform"]:checked').value;
+    
+    // Get selected output format 
+    const outputFormat = document.querySelector('input[name="output-platform"]:checked').value;
+    
+    // Convert text based on formats
+    let convertedText = inputText;
+    
+    // Convert from input format to plain text
+	const regex = new RegExp(platform_ruby_input_format[inputFormat].pattern);
+	convertedText = convertedText.replace(regex, (match, p1, p2) => {
+		return platform_ruby_output_format[outputFormat].replace('$1', p1).replace('$2', p2);
+	});
+    
+    // Output converted text
+    document.querySelectorAll('textarea')[1].value = convertedText;
+});
+</script>
