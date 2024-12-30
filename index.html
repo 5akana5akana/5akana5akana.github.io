@@ -75,7 +75,7 @@ document.querySelector('button').addEventListener('click', () => {
     let convertedText = inputText;
     
     // Convert from input format to plain text
-	const regex = new RegExp(platform_ruby_input_format[inputFormat].pattern);
+	const regex = new RegExp(platform_ruby_input_format[inputFormat].pattern, 'g');
 	convertedText = convertedText.replace(regex, (match, p1, p2) => {
 		const p = [p1, p2];
 		const groups = platform_ruby_input_format[inputFormat].groups;
