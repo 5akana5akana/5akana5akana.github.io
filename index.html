@@ -50,18 +50,6 @@
 <script>
 document.querySelector('button').addEventListener('click', () => {
 
-	// from input format to output format. This should be a regex pattern and has two groups, each of which is a regex pattern.
-	// The groups index shows whether the matched group is the kanji or the reading.
-	const platform_ruby_input_format = {
-		'Pixiv': {pattern: '\\[\\[rb:([^> ]+) ?> ?([^>]+)\\]\\]', groups: [0,1]},
-		'Pukiwiki': {pattern: '&ruby\\(([^)]+)\\)\\{([^}]+)\\};', groups: [1,0]},
-	} 
-
-	const platform_ruby_output_format = {
-		'Pixiv': '[[rb:$1>$2]]',
-		'Pukiwiki': '&ruby($2){$1};',
-	} // from output format to input format. $1 is the kanji, $2 is the reading.
-
     // Get input text
     const inputText = document.querySelector('textarea').value;
     
@@ -73,16 +61,79 @@ document.querySelector('button').addEventListener('click', () => {
     
     // Convert text based on formats
     let convertedText = inputText;
-    
+
+	// First convert ruby to output format
+	convertedText = ruby_conversion(inputText, inputFormat, outputFormat);
+
+	// Then convert chapter to output format
+	convertedText = chapter_conversion(convertedText, inputFormat, outputFormat);
+
+	// Then convert newpage to output format
+	convertedText = newpage_conversion(convertedText, inputFormat, outputFormat);
+
+    // Output converted text
+    document.querySelectorAll('textarea')[1].value = convertedText;
+});
+
+function ruby_conversion(inputText, inputFormat, outputFormat) {
+	// from input format to output format. This should be a regex pattern and has two groups, each of which is a regex pattern.
+	// The groups index shows whether the matched group is the kanji or the reading.
+	const platform_ruby_input_format = {
+		'Pixiv': {pattern: '\\[\\[rb:([^> ]+) ?> ?([^\\]]+)\\]\\]', groups: [0,1]},
+		'Pukiwiki': {pattern: '&ruby\\(([^)]+)\\)\\{([^}]+)\\};', groups: [1,0]},
+	} 
+
+	const platform_ruby_output_format = {
+		'Pixiv': '[[rb:$1>$2]]',
+		'Pukiwiki': '&ruby($2){$1};',
+	} // from output format to input format. $1 is the kanji, $2 is the reading.
+
     // Convert from input format to plain text
 	const regex = new RegExp(platform_ruby_input_format[inputFormat].pattern, 'g');
-	convertedText = convertedText.replace(regex, (match, p1, p2) => {
+	const convertedText = inputText.replace(regex, (match, p1, p2) => {
 		const p = [p1, p2];
 		const groups = platform_ruby_input_format[inputFormat].groups;
 		return platform_ruby_output_format[outputFormat].replace('$1', p[groups[0]]).replace('$2', p[groups[1]]);
 	});
     
-    // Output converted text
-    document.querySelectorAll('textarea')[1].value = convertedText;
-});
+	return convertedText;
+}
+
+function chapter_conversion(inputText, inputFormat, outputFormat) {
+	const platform_chapter_input_format = {
+		'Pixiv': '\n?\\[chapter:([^\\]]+)\\]',
+		'Pukiwiki': '\n?\\*+ (.*)'
+	};
+
+	const platform_chapter_output_format = {
+		'Pixiv': '\n[chapter:$1]',
+		'Pukiwiki': '\n* $1',
+	};
+
+	const regex = new RegExp(platform_chapter_input_format[inputFormat]);
+	const convertedText = inputText.replace(regex, (match, p1) => {
+		return platform_chapter_output_format[outputFormat].replace('$1', p1);
+	});
+
+	return convertedText;
+}
+
+function newpage_conversion(inputText, inputFormat, outputFormat) {
+	const platform_newpage_input_format = {
+		'Pixiv': '\n?\\[newpage\\]',
+		'Pukiwiki': '\n?----+'
+	};
+
+	const platform_newpage_output_format = {
+		'Pixiv': '\n[newpage]',
+		'Pukiwiki': '\n----',
+	};
+
+	const regex = new RegExp(platform_newpage_input_format[inputFormat]);
+	const convertedText = inputText.replace(regex, (match) => {
+		return platform_newpage_output_format[outputFormat];
+	});
+
+	return convertedText;
+}
 </script>
