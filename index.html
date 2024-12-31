@@ -53,7 +53,7 @@ document.querySelector('button').addEventListener('click', () => {
 	// from input format to output format. This should be a regex pattern and has two groups, each of which is a regex pattern.
 	// The groups index shows whether the matched group is the kanji or the reading.
 	const platform_ruby_input_format = {
-		'Pixiv': {pattern: '\\[\\[rb:([^>]+)>([^>]+)\\]\\]', groups: [0,1]},
+		'Pixiv': {pattern: '\\[\\[rb:([^> ]+) ?> ?([^>]+)\\]\\]', groups: [0,1]},
 		'Pukiwiki': {pattern: '&ruby\\(([^)]+)\\)\\{([^}]+)\\};', groups: [1,0]},
 	} 
 
